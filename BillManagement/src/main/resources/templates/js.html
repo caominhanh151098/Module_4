@@ -1,0 +1,111 @@
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<div th:fragment="js">
+    <script th:inline="javascript">
+
+        let billDetails = [[${bill.billDetails}]];
+        let products = [[${products}]];
+        let productChoices = [];
+        let productSelect = [];
+        let currentSize = billDetails.length;
+        const billDetailElement = document.getElementById('billDetail');
+
+        renderBillDetail();
+
+        function addMore() {
+            const data = {
+                price: '',
+                quantity: '',
+                product: {
+                    id: null
+                }
+            };
+
+
+            billDetails.push(data);
+
+            renderBillDetail();
+            currentSize++;
+        }
+
+        function renderBillDetail() {
+            changeSelectProduct();
+            let str = "";
+            billDetails.forEach((billDetail, index) => {
+                let product = products.find(e => e.id === +billDetail.product.id);
+                let strOption = "";
+                if (product != null)
+                    strOption = `<option value='${product.id}'>${product.nameProduct}</option>`;
+                else
+                    strOption = `<option value=''>--Choose--</option>`;
+                productSelect.forEach(product => {
+                    strOption += `<option value="${product.id}">${product.nameProduct} </option>`
+                });
+                str += `
+                <div class="col-4">
+                    <label for="product0" class="form-label">Product</label>
+                    <select id="${index}"
+                            class="form-control" id="product0"
+                            value="${billDetail.product.id}"
+                            onchange="onChangeProduct(this)"
+                            name="${'billDetails[' + index + '].product.id'}">
+                            ${strOption}
+                           </select>
+                </div>
+                <div class="col-3">
+                    <label class="form-label">Price</label>
+                    <input type="text" disabled class="form-control price" id="price${index}" value="${billDetail.price || 0}">
+                </div>
+                <div class="col-3">
+                    <label for="quantity" class="form-label">Quantity</label>
+                    <input type="number" id="quantity${index}" class="form-control"
+                    value="${billDetail.quantity}"
+                    onchange="changeQuantity(this)"
+                           name="${'billDetails[' + index + '].quantity'}">
+                </div>
+                <div class="col-2">
+                    <label for="quantity" class="form-label">Action</label>
+                    <button type="button" class="btn btn-danger form-control" onclick="removeProductFromCart(${index})">Delete</button>
+                </div>`
+
+            })
+            billDetailElement.innerHTML = str;
+        }
+
+        function onChangeProduct(e) {
+            const product = products.find(product => product.id === +e.value);
+            let priceEle = document.getElementById(`price${e.id}`);
+            billDetails[e.id].price = product.price;
+            priceEle.value = product.price;
+            billDetails[e.id].product.id = e.value;
+            renderBillDetail();
+        }
+
+        function changeQuantity(e) {
+            if (+e.value < 0) {
+                e.value = 0;
+                return;
+            }
+            let index = extractNumberFromString(e.id);
+            billDetails[index].quantity = +document.getElementById(e.id).value;
+        }
+
+        function changeSelectProduct() {
+            for (let i = 0; i < currentSize; i++) {
+                productChoices[i] = +billDetails[i].product.id;
+            }
+            productSelect = products.filter(item => !productChoices.includes(item.id));
+        }
+
+        function extractNumberFromString(str) {
+            let number = str.match(/\d+/);
+            return parseInt(number);
+        }
+
+        function removeProductFromCart(index) {
+            billDetails.splice(index, 1);
+            productChoices.splice(index, 1);
+            currentSize--;
+            renderBillDetail();
+        }
+    </script>
+</div>

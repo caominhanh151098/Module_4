@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Home</title>
+</head>
+<body>
+<form method="post" action="">
+    <label>Từ khóa: </label>
+    <input type="text" name="key" th:value="${key}"><br>
+    <label>Nghĩa: </label>
+    <input type="text" name="value" th:value="${value}" style="width: 500px"><br>
+    <button>Dịch</button>
+</form>
+</body>
+</html>

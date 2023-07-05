@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit</title>
+</head>
+<body>
+<h2 th:if="${message != null}" th:text="${message}"></h2>
+<h3><a href="/demo">Back</a></h3>
+<form th:object="${createForm}" action="/demo/edit" method="post">
+    <fieldset>
+        <legend>Edit</legend>
+        <input type="hidden" name="id" th:value="*{id}">
+        <input name="name" th:value="*{name}">
+        <h4 th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></h4>
+        <input name="price" th:value="*{price}">
+        <h4 th:if="${#fields.hasErrors('price')}" th:errors="*{price}"></h4>
+        <select name="categoryProduct" th:field="*{categoryId}">
+            <option th:value="0">--None--</option>
+            <th:block th:each="category : ${categories}">
+                <option th:text="${category.name}" th:value="${category.id}"></option>
+            </th:block>
+        </select>
+        <div th:if="${#fields.hasErrors('categoryId')}" th:errors="*{categoryId}"></div>
+        <button>Submit</button>
+    </fieldset>
+</form>
+</body>
+</html>
