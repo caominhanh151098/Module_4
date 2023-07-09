@@ -1,12 +1,12 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <div th:fragment="js">
     <script th:inline="javascript">
-        const categories = [[${categories}]]
+
         let inputs = [
             {
                 label: 'Name Product',
                 id: 'nameProduct',
-                field: 'name',
+                field: 'nameProduct',
                 pattern: "^[A-Za-z\\d]{6,20}",
                 message: "Gồm 6 - 20 ký tự chữ và số.",
                 required: true,
@@ -50,7 +50,6 @@
             },
         ]
         renderForm();
-
         function renderForm() {
             let inputForm = document.querySelector('#formBody');
             inputForm.innerHTML = "";
@@ -65,9 +64,10 @@
             }
             return `<div class="${prop.classDiv}">
                         <label for="${prop.id}" class="form-label">${prop.label}</label>
-                        <input type="${prop.type || 'text'}" class="form-control" name="${prop.field}"
+                        <input type="${prop.type || 'text'}" class="input-custom form-control" name="${prop.field}"
                         ${prop.required ? 'required' : ''}
                         onblur="onFocus(${index})"
+                        ${prop.pattern ? `pattern=${prop.pattern}` : ""}
                         value="${prop.value}">
                         <span class="error">${prop.message}</span>
                     </div>`
@@ -77,7 +77,8 @@
             let options = "";
             options += `<div class="col-md-3">
                 <label for="${prop.id}" class="form-label">${prop.label}</label>
-                <select id="${prop.id}" class="form-control" name="${prop.field}"  onblur="onFocus(${index})" value="${prop.value}">
+                <select id="${prop.id}" class="input-custom form-control" name="${prop.field}"  onblur="onFocus(${index})"
+                ${prop.pattern ? `pattern=${prop.pattern}` : ""} value="${prop.value}">
                 `
             prop.options.forEach(category => {
                 options += ` <option value="${category.id}" >${category.name}</option>`
@@ -94,8 +95,10 @@
         document.addEventListener('invalid', (function () {
             return function (e) {
                 e.preventDefault();
-                e.target.onblur(e);
+                e.target.onblur();
             };
         })(), true);
+
+
     </script>
 </div>

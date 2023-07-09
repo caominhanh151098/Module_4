@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/html" lang="en">
+<head th:replace="layout.html :: header">
+    <meta charset="UTF-8">
+    <title>Product Import</title>
+</head>
+<body>
+<h1>LIST PRODUCT Import</h1>
+<h3>
+    <button type="button" class="btn btn-primary" onclick="showForm(-1)" data-bs-toggle="modal"
+            data-bs-target="#exampleModal">CREATE
+    </button>
+</h3>
+<form onsubmit="submitSearch(event)" id="formSearch">
+    <input id="search">
+    <button class="btn btn-primary">Submit</button>
+</form>
+<div class="container-fluid" style="padding: 2rem 4rem">
+    <table class="table table-striped table-hover">
+        <thead>
+        <tr>
+            <th>Index</th>
+            <th>Import Code</th>
+            <th>Import Day</th>
+            <th>Customer Name</th>
+            <th>Action</th>
+        </tr>
+        </thead>
+        <tbody id="body-data">
+        </tbody>
+    </table>
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <form id="form" onsubmit="onSubmit(event)" class="row g-3 card"
+              style="flex-direction: row">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Form</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body row" id="formBody">
+                    </div>
+                    <hr>
+                    <div class="modal-body row" id="product_import_detail">
+                    </div>
+                    <div class="d-flex flex-row-reverse">
+                        <button class="btn btn-info ">Back</button>
+                        <button type="button" onclick="addMore()" class="btn btn-primary me-3">Add More</button>
+                        <button class="btn btn-primary me-3">Submit</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<nav aria-label="Page navigation example" id="pagination">
+</nav>
+<th:block th:replace="layout.html :: footer"></th:block>
+<script th:inline="javascript">
+    const body = document.getElementById("body-data");
+    const inputForm = document.querySelector("#formBody");
+    const inputDetailForm = document.querySelector("#product_import_detail");
+    const myModal = new bootstrap.Modal(document.getElementById('exampleModal'))
+    const customers = [[${customers}]];
+    const products = [[${products}]];
+    const sizes = [[${sizes}]];
+    const colors = [[${colors}]];
+    let product_imports = [];
+    let productImport;
+    let productImportSelected;
+    let search;
+    let page = 0;
+    let totalPages = 0;
+    let inputs;
+
+    initData();
+    function initData(search, page) {
+        body.innerHTML = "";
+        $.ajax({
+            url: `http://localhost:8080/api/product_imports?search=${search || ""}&page=${page || "0"}`,
+            method: 'get'
+        }).done(data => {
+            totalPages = data.totalPages;
+            product_imports = data.content;
+            product_imports.forEach((e, index) => {
+                body.innerHTML += `
+                <tr>
+                    <td>${index}</td>
+                    <td>${e.importCode}</td>
+                    <td>${e.importDay}</td>
+                    <td>${e.customer.name || ""}</td>
+                    <td>
+                        <button type="button" class="btn btn-primary" onclick="showForm(${index})" data-bs-toggle="modal"
+            data-bs-target="#exampleModal">Edit</button>
+                        <button type="button" class="btn btn-primary">Delete</button>
+                    </td>
+                </tr>`
+            })
+            renderPage();
+        })
+    }
+
+
+    function showForm(index) {
+        if (index !== -1) {
+            productImport = product_imports[index];
+            productImportSelected = productImport;
+        } else {
+            productImport = {
+                id: "0",
+                importCode: "",
+                importDay: "",
+                customer: "",
+                productImportDetails: [],
+            };
+            productImportSelected = undefined;
+        }
+        inputs = [
+            {
+                type: 'hidden',
+                name: 'id',
+                value: productImport.id,
+            },
+            {
+                label: 'Import Code',
+                id: 'importCode',
+                name: 'importCode',
+                required: true,
+                value: productImport.importCode,
+                classDiv: 'col-md-3'
+            },
+            {
+                label: 'Import Day',
+                id: 'importDay',
+                name: 'importDay',
+                type: 'date',
+                required: true,
+                value: productImport.importDay,
+                classDiv: 'col-md-9'
+            },
+            {
+                type: 'hidden',
+                name: 'customerId',
+                value: productImport.customer.id,
+            },
+            {
+                label: 'Customer Name',
+                id: 'customerName',
+                name: 'customerName',
+                required: true,
+                value: productImport.customer.name,
+                classDiv: 'col-md-5'
+            },
+            {
+                label: 'Customer Phone',
+                id: 'customerPhone',
+                name: 'customerPhone',
+                required: true,
+                value: productImport.customer.phone,
+                classDiv: 'col-md-7'
+            },
+            {
+                label: 'Customer Email',
+                id: 'customerEmail',
+                name: 'customerEmail',
+                required: true,
+                value: productImport.customer.email,
+                classDiv: 'col-md-12'
+            },
+            {
+                label: 'Customer Address',
+                id: 'customerAddress',
+                name: 'customerAddress',
+                required: true,
+                value: productImport.customer.address,
+                classDiv: 'col-md-12'
+            },
+        ]
+        renderForm();
+        inputDetailForm.innerHTML = '';
+        productImport.productImportDetails.forEach(importDetail => {
+            renderProductImportDetail(importDetail);
+        })
+    }
+
+    function renderForm() {
+        inputForm.innerHTML = '';
+        inputs.forEach((e, index) => {
+            inputForm.innerHTML += formInputs(e, index);
+        })
+    }
+
+    function renderProductImportDetail(importDetail) {
+        const inputProductImportDetail = [{
+            label: "Product",
+            name: "product",
+            message: "Product not be blank",
+            require: true,
+            type: "select",
+            value: importDetail.product.id,
+            options: products.map(e => {
+                return {value: e.id, name: e.nameProduct}
+            }),
+            classDiv: 'col-3'
+        },
+            {
+                label: "Size",
+                name: "size",
+                message: "Size not be blank",
+                require: true,
+                type: "select",
+                value: importDetail.size,
+                options: sizes.map(e => {
+                    return {value: e, name: e}
+                }),
+                classDiv: 'col-3'
+            },
+            {
+                label: "Color",
+                name: "color",
+                message: "Color not be blank",
+                require: true,
+                type: "select",
+                value: importDetail.color,
+                options: colors.map(e => {
+                    return {value: e, name: e}
+                }),
+                classDiv: 'col-3'
+            },
+            {
+                label: "Quantity",
+                name: "quantity",
+                message: "Quantity not be blank",
+                require: true,
+                type: "number",
+                value: importDetail.quantity,
+                classDiv: 'col-3'
+            }];
+        inputProductImportDetail.forEach((e, index) => {
+            $('#product_import_detail').append(formInputs(e, index));
+        })
+    }
+
+    function formInputs(props, index) {
+        if (props.type === 'select') {
+            return formSelect(props, index);
+        }
+        return `<div class="${props.classDiv || ''}">
+                            ${props.label ? `
+                            <label for="${props.id}" class="form-label">${props.label || ''}</label>` : ""}
+                            <input type="${props.type || 'text'}" class="input-custom form-control" name="${props.name}"
+                            ${props.required ? 'required' : ''}
+                            onblur="onFocus(${index})"
+                            ${props.pattern ? `pattern=${props.pattern}` : ""}
+                            value="${props.value || ''}">
+<!--                            <span class="error">${props.message || ''}</span>-->
+                        </div>`;
+    }
+
+    function formSelect(props, index) {
+        let options = "";
+        options += `<div class="${props.classDiv}">
+                    <label for="${props.name}[${index}]" class="form-label">${props.label}</label>
+                    <select id="${props.name}[${index}]" class="input-custom form-control" name="${props.name}"  onblur="onFocus(${index})"
+                    ${props.pattern ? `pattern=${props.pattern}` : ""} value="${props.value}">
+                    `
+        props.options.forEach(prop => {
+
+            if (props.value === prop.value) {
+                options += ` <option value="${prop.value}" selected>${prop.name}</option>`
+            } else
+                options += ` <option value="${prop.value}">${prop.name}</option>`
+        })
+        options += `</select></div>`
+        return options;
+    }
+
+    function addMore() {
+        let importDetail = {
+            product: {id: "",},
+            color: '',
+            quantity: '',
+            sellNum: '',
+            size: '',
+        };
+        renderProductImportDetail(importDetail);
+    }
+
+    function onFocus(index) {
+        return;
+    }
+
+    function onSubmit(e) {
+        e.preventDefault();
+        const form = document.getElementById("form");
+        const formInput = new FormData(form);
+        const data = Object.fromEntries(formInput.entries());
+        const sizes = document.getElementsByName('size');
+        const colors = document.getElementsByName('color');
+        const quantities = document.getElementsByName('quantity');
+        const products = document.getElementsByName('product');
+        const productImportDetails = [];
+        const customer = {
+            id: data.customerId,
+            name: data.customerName,
+            phone: data.customerPhone,
+            email: data.customerEmail,
+            address: data.customerAddress,
+        }
+        for (let i = 0; i < sizes.length; i++) {
+            productImportDetails.push({
+                product: {id: products[i].value,},
+                quantity: quantities[i].value,
+                color: colors[i].value,
+                size: sizes[i].value,
+                sellNum: "0"
+            });
+        }
+        data.productImportDetails = productImportDetails;
+        data.customer = customer;
+        if (productImportSelected) {
+            $.ajax({
+                url: 'http://localhost:8080/api/product_imports',
+                method: 'PUT',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                data: JSON.stringify(data),
+            }).done(e => {
+                alert("FUCK!");
+                initData();
+                myModal.hide();
+            })
+        } else {
+            $.ajax({
+                url: 'http://localhost:8080/api/product_imports',
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                data: JSON.stringify(data),
+            }).done(e => {
+                alert("FUCK!");
+                initData();
+                myModal.hide();
+            })
+        }
+    }
+
+    function submitSearch(e) {
+        e.preventDefault();
+        search = document.getElementById("search").value;
+        initData(search, 0);
+    }
+
+    const changePage = (pageStep) => {
+        if (pageStep <= 0)
+            pageStep = 0;
+        if (pageStep + 1 >= totalPages)
+            pageStep = totalPages - 1;
+        if (pageStep == page)
+            return;
+        page = pageStep;
+        initData(search, pageStep);
+    }
+
+    function renderPage() {
+        let pageForm = document.getElementById("pagination");
+        pageForm.innerHTML = "";
+        let pagePage = "";
+        pagePage += `
+            <ul class="pagination justify-content-center">
+                <li class="page-item ${page <= 0 ? "disabled" : ""}">
+                    <a class="page-link" tabindex="-1" aria-disabled="${page <= 0 ? "true" : ""}"
+                    ${page > 0 ? `onclick="changePage(${page - 1})"` : ""}>Previous</a>
+                </li>`;
+        if (page <= 1 || totalPages <= 3) {
+            pagePage += `
+                <li class="page-item ${page == 0 ? "active" : ""}"><a class="page-link" onclick="changePage(0)"">1</a></li>
+                <li class="page-item ${page == 1 ? "active" : ""}"><a class="page-link" onclick="changePage(1)"">2</a></li>
+                <li class="page-item ${page == 2 ? "active" : ""}"><a class="page-link" onclick="changePage(2)"">3</a></li>`;
+        } else if (page >= totalPages - 2) {
+            pagePage += `
+                <li class="page-item ${page == totalPages - 3 ? "active" : ""}"><a class="page-link" onclick="changePage(${totalPages - 3})">${totalPages - 2}</a></li>
+                <li class="page-item ${page == totalPages - 2 ? "active" : ""}"><a class="page-link" onclick="changePage(${totalPages - 2})">${totalPages - 1}</a></li>
+                <li class="page-item ${page == totalPages - 1 ? "active" : ""}"><a class="page-link" onclick="changePage(${totalPages - 1})">${totalPages}</a></li>`;
+        } else {
+            pagePage += `
+                <li class="page-item disabled"><a class="page-link" aria-disabled="true">...</a></li>`
+            for (let i = page - 1; i <= page + 1; i++) {
+                pagePage += `
+                    <li class="page-item" ${i == page ? "active" : ""}><a class="page-link" onclick="changePage(${i})">${i + 1}</a></li>`
+            }
+            pagePage += `
+                <li class="page-item disabled"><a class="page-link" aria-disabled="true">...</a></li>
+            `
+        }
+        pagePage += `
+                <li class="page-item ${page + 1 >= totalPages ? "disabled" : ""}">
+                    <a class="page-link" tabindex="-1" aria-disabled="${page + 1 >= totalPages ? "true" : ""}"
+                    ${page + 1 < totalPages ? `onclick="changePage(${page + 1})"` : ""}>Next</a>
+                </li>
+            </ul>`;
+        pageForm.innerHTML = pagePage;
+    }
+</script>
+</body>
+</html>

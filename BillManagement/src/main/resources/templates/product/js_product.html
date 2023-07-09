@@ -1,0 +1,33 @@
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<div th:fragment="js">
+    <script th:inline="javascript">
+        let body = document.getElementById("body-data");
+        let products = [];
+        // renderForm();
+        initData();
+
+        function initData() {
+            body.innerHTML = "";
+            $.ajax({
+                url: "http://localhost:8080/api/products",
+                method: "get",
+            }).done(data => {
+                products = data;
+                products.forEach((product, index) => {
+                    body.innerHTML += `
+                           <tr>
+                                <td>${index}</td>
+                                <td>${product.nameProduct}</td>
+                                <td>${product.quantity}</td>
+                                <td>${product.price}</td>
+                                <td>${product.category}</td>
+                                <td>
+                                    <button type="button" class="btn btn-primary" onclick="showForm(${index})" data-bs-toggle="modal" data-bs-target="#exampleModal">Edit</button>
+                                    <button type="button" class="btn btn-primary">Delete</button>
+                                </td>
+                            </tr>`
+                })
+            })
+        }
+    </script>
+</div>

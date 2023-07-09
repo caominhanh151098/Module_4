@@ -3,15 +3,16 @@ package com.example.billmanagement.service.product;
 import com.example.billmanagement.model.Product;
 import com.example.billmanagement.repository.CategoryRepository;
 import com.example.billmanagement.repository.ProductRepository;
-import com.example.billmanagement.service.bill.response.ProductSaveBillResponse;
 import com.example.billmanagement.service.product.request.ProductSaveRequest;
 import com.example.billmanagement.service.product.response.CategorySaveProductResponse;
 import com.example.billmanagement.service.product.response.ProductSaveResponse;
+import com.example.billmanagement.service.product.response.ShowProductsResponse;
 import com.example.billmanagement.util.AppUtils;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,6 +22,22 @@ public class ProductService {
     private CategoryRepository categoryRepository;
     @Autowired
     private ProductRepository productRepository;
+
+    public List<ShowProductsResponse> getAll() {
+//        List<ShowProductsResponse> productList = new ArrayList<>();
+//        for (Product product : productRepository.findAll()) {
+//            ShowProductsResponse productResponse = AppUtils.mapper.map(product, ShowProductsResponse.class);
+//            productResponse.setCategory(product.getCategory().getName());
+//            productList.add(productResponse);
+//
+//        }
+//        return productList;
+        return productRepository.findAll().stream().map(e -> {
+            var pImport = AppUtils.mapper.map(e, ShowProductsResponse.class);
+            pImport.setCategory(e.getCategory().getName());
+            return pImport;
+        }).collect(Collectors.toList());
+    }
 
     @Transactional
     public void createProduct(ProductSaveRequest productRequest) {

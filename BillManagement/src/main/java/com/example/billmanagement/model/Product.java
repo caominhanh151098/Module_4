@@ -1,5 +1,6 @@
 package com.example.billmanagement.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -17,10 +18,15 @@ public class Product {
     @Column(nullable = false)
     private BigDecimal price;
     @OneToMany(mappedBy = "product")
+    @JsonIgnore
     private Set<BillDetail> billDetails;
     @ManyToOne
     @JoinColumn(name = "category_id")
     private Category category;
+
+    @OneToMany(mappedBy = "product")
+    @JsonIgnore
+    private Set<ProductImportDetail> productImportDetails;
 
     public Product() {
     }
@@ -78,5 +84,13 @@ public class Product {
 
     public void setCategory(Category category) {
         this.category = category;
+    }
+
+    public Set<ProductImportDetail> getProductImportDetails() {
+        return productImportDetails;
+    }
+
+    public void setProductImportDetails(Set<ProductImportDetail> productImportDetails) {
+        this.productImportDetails = productImportDetails;
     }
 }

@@ -1,12 +1,10 @@
 package com.example.billmanagement.controller;
 
-import com.example.billmanagement.model.Product;
 import com.example.billmanagement.repository.CategoryRepository;
 import com.example.billmanagement.repository.ProductRepository;
 import com.example.billmanagement.service.product.ProductService;
 import com.example.billmanagement.service.product.request.ProductSaveRequest;
 import com.example.billmanagement.service.product.response.ProductSaveResponse;
-import com.example.billmanagement.util.AppUtils;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -29,14 +27,16 @@ public class ProductController {
 
     @GetMapping
     public ModelAndView showProducts() {
-        ModelAndView model = new ModelAndView("product");
+        ModelAndView model = new ModelAndView("product/product");
+        var category = productService.getAllCategory();
         model.addObject("products", productRepository.findAll());
+        model.addObject("categories", category);
         return model;
     }
 
     @GetMapping("/create")
     public ModelAndView formCreateProduct() {
-        ModelAndView model = new ModelAndView("create_product");
+        ModelAndView model = new ModelAndView("product/create_product");
         var category = productService.getAllCategory();
         model.addObject("product", new ProductSaveRequest());
         model.addObject("categories", category);
@@ -45,7 +45,7 @@ public class ProductController {
 
     @PostMapping("/create")
     public ModelAndView createProduct(@Valid @ModelAttribute("product") ProductSaveRequest product, BindingResult result) {
-        ModelAndView model = new ModelAndView("create_product");
+        ModelAndView model = new ModelAndView("product/create_product");
         model.addObject("categories", productService.getAllCategory());
         if (result.hasErrors())
             return model;
@@ -55,7 +55,7 @@ public class ProductController {
 
     @GetMapping("/edit/{id}")
     public ModelAndView formEditProduct(@PathVariable int id) {
-        ModelAndView model = new ModelAndView("edit_product");
+        ModelAndView model = new ModelAndView("product/edit_product");
         model.addObject("product", productService.getProductById(id));
         model.addObject("categories", categoryRepository.findAll());
         return model;
@@ -63,7 +63,7 @@ public class ProductController {
 
     @PostMapping("/edit")
     public ModelAndView editProduct(@Valid @ModelAttribute("product") ProductSaveResponse product, BindingResult result) {
-        ModelAndView model = new ModelAndView("edit_product");
+        ModelAndView model = new ModelAndView("product/edit_product");
         model.addObject("categories", categoryRepository.findAll());
         if (result.hasErrors())
             return model;

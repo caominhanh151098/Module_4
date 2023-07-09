@@ -1,5 +1,6 @@
 package com.example.billmanagement.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.util.Set;
@@ -19,6 +20,10 @@ public class Customer {
     private String address;
     @OneToMany(mappedBy = "customer")
     public Set<Bill> bills;
+    @OneToMany(mappedBy = "customer")
+    @JsonIgnore
+    private Set<ProductImport> productImport;
+
     public Customer() {
     }
 
@@ -69,11 +74,20 @@ public class Customer {
     public void setAddress(String address) {
         this.address = address;
     }
+
     public Set<Bill> getBills() {
         return bills;
     }
 
     public void setBills(Set<Bill> bills) {
         this.bills = bills;
+    }
+
+    public Set<ProductImport> getProductImport() {
+        return productImport;
+    }
+
+    public void setProductImport(Set<ProductImport> productImport) {
+        this.productImport = productImport;
     }
 }

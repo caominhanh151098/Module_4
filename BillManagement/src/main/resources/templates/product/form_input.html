@@ -1,0 +1,174 @@
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<div th:fragment="formInput">
+    <script th:inline="javascript">
+        let inputForm = document.querySelector("#formBody");
+        let categories = [];
+        let myModal = new bootstrap.Modal(document.getElementById('exampleModal'))
+        let product;
+        let productSelected;
+        $.ajax({
+            url: 'http://localhost:8080/api/categories',
+            method: 'get',
+        }).done(data => {
+            categories = data;
+        })
+
+
+        function showForm(index) {
+            if (index !== -1) {
+                product = products[index];
+                productSelected = product;
+            } else {
+                product = {
+                    id: 0,
+                    nameProduct: "",
+                    price: "",
+                    quantity: "",
+                    category: "",
+                };
+                productSelected = undefined;
+            }
+
+                inputForm.innerHTML = "";
+            let inputs = [
+                {
+                    type: 'hidden',
+                    name: 'id',
+                    value: product.id,
+                },
+                {
+                    label: 'Name Product',
+                    id: 'nameProduct',
+                    name: 'nameProduct',
+                    message: "Gồm 6 - 20 ký tự chữ và số.",
+                    required: true,
+                    value: product.nameProduct,
+                    classDiv: 'col-md-12'
+                },
+                {
+                    label: 'Quantity',
+                    id: 'quantity',
+                    name: 'quantity',
+                    type: "number",
+                    pattern: "\\d+",
+                    message: "Lỗi nhập số!",
+                    required: true,
+                    value: product.quantity,
+                    classDiv: 'col-md-12'
+                },
+                {
+                    label: 'Price',
+                    id: 'price',
+                    name: 'price',
+                    type: "number",
+                    pattern: "\\d+",
+                    message: "Lỗi nhập số!",
+                    required: true,
+                    value: product.price,
+                    classDiv: 'col-md-12'
+                },
+                {
+                    label: 'Category',
+                    id: 'category.id',
+                    name: 'category',
+                    type: 'select',
+                    message: "Lỗi nhập!",
+                    required: true,
+                    options: categories.map(e => {
+                        return {id: e.id, name: e.name};
+                    }),
+                    value: product.category,
+                    classDiv: 'col-md-12'
+                },
+            ]
+            inputs.forEach((prop, index) =>
+                inputForm.innerHTML += formInputs(prop, index));
+
+        }
+
+        function formInputs(prop, index) {
+            if (prop.type === 'select') {
+                return formSelect(prop, index);
+            }
+            return `<div class="${prop.classDiv || ''}">
+                            <label for="${prop.id}" class="form-label">${prop.label || ''}</label>
+                            <input type="${prop.type || 'text'}" class="input-custom form-control" name="${prop.name}"
+                            ${prop.required ? 'required' : ''}
+                            onblur="onFocus(${index})"
+                            ${prop.pattern ? `pattern=${prop.pattern}` : ""}
+                            value="${prop.value}">
+<!--                            <span class="error">${prop.message || ''}</span>-->
+                        </div>`
+        }
+
+        function formSelect(prop, index) {
+            let options = "";
+            options += `<div class="${prop.classDiv}">
+                    <label for="${prop.id}" class="form-label">${prop.label}</label>
+                    <select id="${prop.id}" class="input-custom form-control" name="${prop.name}"  onblur="onFocus(${index})"
+                    ${prop.pattern ? `pattern=${prop.pattern}` : ""} value="${prop.value}">
+                    `
+            prop.options.forEach(category => {
+                if (category.name === prop.value)
+                    options += ` <option value="${category.id}" selected>${category.name}</option>`
+                else
+                    options += ` <option value="${category.id}">${category.name}</option>`
+            })
+            options += `</select></div>`
+            return options;
+        }
+
+        const onFocus = (index) => {
+            const inputsForm = document.querySelectorAll('#formBody .input-custom')
+            inputsForm[index].setAttribute("focused", "true");
+        }
+        document.addEventListener('invalid', (function () {
+            return function (e) {
+                e.preventDefault();
+                e.target.onblur();
+            };
+        })(), true);
+
+        function onSubmit(e) {
+            e.preventDefault();
+
+            const form = document.getElementById("form");
+            const formInput = new FormData(form);
+            const data = Object.fromEntries(formInput.entries());
+
+            data.category = {
+                id: data.category
+            }
+            data.quantity = +data.quantity;
+            if(productSelected) {
+                $.ajax({
+                    url: 'http://localhost:8080/api/products',
+                    method: 'PUT',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    data: JSON.stringify(data),
+                }).done(e => {
+                    alert('Success!');
+                    initData();
+                    myModal.hide();
+                })
+            } else {
+                $.ajax({
+                    url: 'http://localhost:8080/api/products',
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    data: JSON.stringify(data),
+                }).done(e => {
+                    alert('Success!');
+                    initData();
+                    myModal.hide();
+                })
+            }
+        }
+    </script>
+</div>
