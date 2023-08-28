@@ -41,7 +41,7 @@
                     id: 'nameProduct',
                     name: 'nameProduct',
                     message: "Gồm 6 - 20 ký tự chữ và số.",
-                    required: true,
+                    // required: true,
                     value: product.nameProduct,
                     classDiv: 'col-md-12'
                 },
@@ -49,10 +49,10 @@
                     label: 'Quantity',
                     id: 'quantity',
                     name: 'quantity',
-                    type: "number",
-                    pattern: "\\d+",
+                    // type: "number",
+                    // pattern: "\\d+",
                     message: "Lỗi nhập số!",
-                    required: true,
+                    // required: true,
                     value: product.quantity,
                     classDiv: 'col-md-12'
                 },
@@ -60,10 +60,10 @@
                     label: 'Price',
                     id: 'price',
                     name: 'price',
-                    type: "number",
-                    pattern: "\\d+",
+                    // type: "number",
+                    // pattern: "\\d+",
                     message: "Lỗi nhập số!",
-                    required: true,
+                    // required: true,
                     value: product.price,
                     classDiv: 'col-md-12'
                 },
@@ -151,7 +151,7 @@
                     data: JSON.stringify(data),
                 }).done(e => {
                     alert('Success!');
-                    initData();
+                    initData(0);
                     myModal.hide();
                 })
             } else {
@@ -165,7 +165,7 @@
                     data: JSON.stringify(data),
                 }).done(e => {
                     alert('Success!');
-                    initData();
+                    initData(0);
                     myModal.hide();
                 })
             }

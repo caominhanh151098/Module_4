@@ -11,4 +11,9 @@ public class HomeController {
         ModelAndView model = new ModelAndView("home");
         return model;
     }
+    @GetMapping("/test")
+    public ModelAndView test() {
+        ModelAndView model = new ModelAndView("TEST");
+        return model;
+    }
 }

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create</title>
+<!--    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"-->
+<!--          integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">-->
+</head>
+<body>
+<h2>Thêm video</h2>
+<form onsubmit="submitCreate(event)" id="form">
+    <div class="form-group">
+        <label for="title">Tên: </label>
+        <input type="text" class="form-control" id="title" name="title" pattern="^[A-Za-z\d ]{8,20}"
+               placeholder="Nhập tên">
+    </div>
+    <div class="form-group">
+        <label for="description">Mô tả: </label>
+        <input type="text" class="form-control" id="description" name="description" placeholder="Nhập mô tả">
+    </div>
+    <label for="description">Danh sách playlist: </label>
+    <div class="form-group form-check" id="playlist">
+
+    </div>
+    <div class="form-group">
+        <label for="url">Link Video: </label>
+        <input type="url" class="form-control" required id="url" name="url" placeholder="Nhập url">
+    </div>
+    <button type="submit" class="btn btn-primary">Tạo</button>
+    <a href="/">
+        <button type="button" class="btn btn-primary">Hủy</button>
+    </a>
+</form>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script th:inline="javascript">
+    let playlist = [[${playlist}]]
+    let checkbox = document.getElementById("playlist")
+    playlist.forEach(pl => {
+        checkbox.innerHTML += `
+            <input type="checkbox" class="form-check-input" name="videoPlaylists" id="check${pl.id}" value="${pl.id}">
+            <label for="check${pl.id}">${pl.name}</lable>`
+    })
+
+    function submitCreate(e) {
+        e.preventDefault();
+        const form = document.getElementById("form");
+        const formInput = new FormData(form);
+        const data = Object.fromEntries(formInput.entries());
+        let playlistCheckbox = [];
+        playlist.forEach((pl, index) => {
+            if (document.getElementById(`check${pl.id}`).checked == true)
+                playlistCheckbox.push(index + 1);
+        })
+        data.videoPlaylists = playlistCheckbox;
+        $.ajax({
+            url: `http://localhost:8080/api/videos`,
+            method: "POST",
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            data: JSON.stringify(data),
+        }).done(e => {
+                alert("Create success");
+                location.href = "/";
+            }
+        )
+    }
+</script>
+</body>
+</html>

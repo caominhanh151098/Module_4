@@ -1,4 +1,4 @@
-package com.example.billmanagement.service.product;
+package com.example.billmanagement.service.category;
 
 import com.example.billmanagement.repository.CategoryRepository;
 import com.example.billmanagement.service.customer.response.CategorySaveResponse;

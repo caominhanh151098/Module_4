@@ -2,11 +2,15 @@ package com.example.billmanagement.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 import java.math.BigDecimal;
 import java.util.Set;
 
 @Entity
+@Where(clause = "deleted = 0")
+@SQLDelete(sql = "UPDATE product  SET deleted = 1 WHERE (`id` = ?);")
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,6 +31,7 @@ public class Product {
     @OneToMany(mappedBy = "product")
     @JsonIgnore
     private Set<ProductImportDetail> productImportDetails;
+    private boolean deleted = false;
 
     public Product() {
     }

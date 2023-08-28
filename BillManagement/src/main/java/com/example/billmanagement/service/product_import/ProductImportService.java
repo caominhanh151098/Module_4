@@ -49,4 +49,8 @@ public class ProductImportService {
         customerRepository.save(productImport.getCustomer());
         productImportRepository.save(productImport);
     }
+
+    public void deleteProductImport(int id) {
+        productImportRepository.deleteById(id);
+    }
 }

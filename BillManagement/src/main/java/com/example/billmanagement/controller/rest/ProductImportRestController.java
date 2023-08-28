@@ -39,4 +39,10 @@ public class ProductImportRestController {
         productImportService.saveProductImport(productImport);
         return ResponseEntity.noContent().build();
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> delete(@PathVariable int id) {
+        productImportService.deleteProductImport(id);
+        return ResponseEntity.noContent().build();
+    }
 }

@@ -1,11 +1,15 @@
 package com.example.billmanagement.model;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 import java.time.LocalDate;
 import java.util.Set;
 
 @Entity
+@Where(clause = "deleted = 0")
+@SQLDelete(sql = "UPDATE product_import SET deleted = 1 WHERE (`id` = ?);")
 public class ProductImport {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,6 +23,8 @@ public class ProductImport {
     private String importCode;
     @OneToMany(mappedBy = "productImport",cascade = CascadeType.ALL)
     private Set<ProductImportDetail> productImportDetails;
+
+    private boolean deleted = false;
 
     public ProductImport() {
     }

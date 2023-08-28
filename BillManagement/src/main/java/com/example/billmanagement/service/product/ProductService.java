@@ -10,8 +10,11 @@ import com.example.billmanagement.service.product.response.ShowProductsResponse;
 import com.example.billmanagement.util.AppUtils;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,19 +27,18 @@ public class ProductService {
     private ProductRepository productRepository;
 
     public List<ShowProductsResponse> getAll() {
-//        List<ShowProductsResponse> productList = new ArrayList<>();
-//        for (Product product : productRepository.findAll()) {
-//            ShowProductsResponse productResponse = AppUtils.mapper.map(product, ShowProductsResponse.class);
-//            productResponse.setCategory(product.getCategory().getName());
-//            productList.add(productResponse);
-//
-//        }
-//        return productList;
         return productRepository.findAll().stream().map(e -> {
             var pImport = AppUtils.mapper.map(e, ShowProductsResponse.class);
             pImport.setCategory(e.getCategory().getName());
             return pImport;
         }).collect(Collectors.toList());
+    }
+    public Page<ShowProductsResponse> getAllWithSearchAndPage(String search, String minPrice,String maxPrice, Pageable pageable) {
+        return productRepository.findWithSearchAndFilter("%"+search+"%", new BigDecimal(minPrice), new BigDecimal(maxPrice), pageable).map(e -> {
+            var pImport = AppUtils.mapper.map(e, ShowProductsResponse.class);
+            pImport.setCategory(e.getCategory().getName());
+            return pImport;
+        });
     }
 
     @Transactional

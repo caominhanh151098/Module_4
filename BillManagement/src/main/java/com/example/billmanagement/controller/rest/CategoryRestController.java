@@ -1,6 +1,6 @@
 package com.example.billmanagement.controller.rest;
 
-import com.example.billmanagement.service.product.CategoryService;
+import com.example.billmanagement.service.category.CategoryService;
 import com.example.billmanagement.service.customer.response.CategorySaveResponse;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

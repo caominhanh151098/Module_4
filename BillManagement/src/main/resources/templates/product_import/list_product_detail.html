@@ -29,33 +29,31 @@
         <tbody id="body-data">
         </tbody>
     </table>
-    <!-- Modal -->
-    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <form id="form" onsubmit="onSubmit(event)" class="row g-3 card"
-              style="flex-direction: row">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalLabel">Form</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body row" id="formBody">
-                    </div>
-                    <hr>
-                    <div class="modal-body row" id="product_import_detail">
-                    </div>
-                    <div class="d-flex flex-row-reverse">
-                        <button class="btn btn-info ">Back</button>
-                        <button type="button" onclick="addMore()" class="btn btn-primary me-3">Add More</button>
-                        <button class="btn btn-primary me-3">Submit</button>
-                    </div>
+</div>
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <form id="form" onsubmit="onSubmit(event)">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Form</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body row" id="formBody">
+                </div>
+                <hr>
+                <div class="modal-body row" id="product_import_detail">
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-info ">Back</button>
+                    <button type="button" onclick="addMore()" class="btn btn-primary me-3">Add More</button>
+                    <button class="btn btn-primary me-3">Submit</button>
                 </div>
             </div>
-        </form>
-    </div>
+        </div>
+    </form>
 </div>
-<nav aria-label="Page navigation example" id="pagination">
-</nav>
+<nav aria-label="Page navigation example" id="pagination"></nav>
 <th:block th:replace="layout.html :: footer"></th:block>
 <script th:inline="javascript">
     const body = document.getElementById("body-data");
@@ -73,9 +71,12 @@
     let page = 0;
     let totalPages = 0;
     let inputs;
+    let pageSize = 0;
 
-    initData();
-    function initData(search, page) {
+    initData(0);
+
+    function initData(pageStep) {
+        page = pageStep;
         body.innerHTML = "";
         $.ajax({
             url: `http://localhost:8080/api/product_imports?search=${search || ""}&page=${page || "0"}`,
@@ -83,17 +84,18 @@
         }).done(data => {
             totalPages = data.totalPages;
             product_imports = data.content;
+            pageSize = data.pageable.pageSize;
             product_imports.forEach((e, index) => {
                 body.innerHTML += `
                 <tr>
-                    <td>${index}</td>
+                    <td>${(pageSize * page) + index + 1}</td>
                     <td>${e.importCode}</td>
                     <td>${e.importDay}</td>
                     <td>${e.customer.name || ""}</td>
                     <td>
                         <button type="button" class="btn btn-primary" onclick="showForm(${index})" data-bs-toggle="modal"
             data-bs-target="#exampleModal">Edit</button>
-                        <button type="button" class="btn btn-primary">Delete</button>
+                        <button type="button" class="btn btn-primary" onclick="deleteProductImport(${e.id})">Delete</button>
                     </td>
                 </tr>`
             })
@@ -319,6 +321,7 @@
         }
         data.productImportDetails = productImportDetails;
         data.customer = customer;
+        console.log(data)
         if (productImportSelected) {
             $.ajax({
                 url: 'http://localhost:8080/api/product_imports',
@@ -353,10 +356,11 @@
     function submitSearch(e) {
         e.preventDefault();
         search = document.getElementById("search").value;
-        initData(search, 0);
+        initData(0);
     }
 
     const changePage = (pageStep) => {
+        console.log(pageStep, page);
         if (pageStep <= 0)
             pageStep = 0;
         if (pageStep + 1 >= totalPages)
@@ -364,7 +368,7 @@
         if (pageStep == page)
             return;
         page = pageStep;
-        initData(search, pageStep);
+        initData(page);
     }
 
     function renderPage() {
@@ -392,7 +396,7 @@
                 <li class="page-item disabled"><a class="page-link" aria-disabled="true">...</a></li>`
             for (let i = page - 1; i <= page + 1; i++) {
                 pagePage += `
-                    <li class="page-item" ${i == page ? "active" : ""}><a class="page-link" onclick="changePage(${i})">${i + 1}</a></li>`
+                    <li class="page-item ${i == page ? "active" : ""}"><a class="page-link" onclick="changePage(${i})">${i + 1}</a></li>`
             }
             pagePage += `
                 <li class="page-item disabled"><a class="page-link" aria-disabled="true">...</a></li>
@@ -405,6 +409,18 @@
                 </li>
             </ul>`;
         pageForm.innerHTML = pagePage;
+    }
+
+    const deleteProductImport = (id) => {
+        if (confirm("Want delete this?")) {
+            $.ajax({
+                url: `http://localhost:8080/api/product_imports/${id}`,
+                method: "DELETE"
+            }).done(e => {
+                alert("FUCK!");
+                initData(0);
+            })
+        }
     }
 </script>
 </body>
